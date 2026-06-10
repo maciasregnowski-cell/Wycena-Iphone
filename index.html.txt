@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Wycena telefonu</title>
+  <style>
+    :root { --bg:#0f172a; --card:#111827; --muted:#94a3b8; --text:#e5e7eb; --acc:#22c55e; --err:#ef4444; }
+    body { margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; background:linear-gradient(120deg,#0b1020,#0f172a 40%,#1f2937); color:var(--text); }
+    .wrap { max-width:860px; margin:40px auto; padding:0 16px; }
+    .card { background:rgba(17,24,39,.75); backdrop-filter: blur(10px); border:1px solid rgba(255,255,255,.08); border-radius:16px; padding:24px; box-shadow:0 10px 30px rgba(0,0,0,.35); }
+    h1 { margin:0 0 8px; font-size:28px; }
+    p.lead { margin:0 0 20px; color:var(--muted); }
+    .grid { display:grid; gap:16px; grid-template-columns:1fr; }
+    @media (min-width:720px){ .grid-2 { grid-template-columns:1fr 1fr; } }
+    label { display:block; font-weight:600; margin:8px 0 6px; }
+    .req { color:var(--muted); font-weight:500; margin-left:6px; font-size:12px; }
+    input[type="text"], input[type="tel"], input[type="number"], select, textarea {
+      width:100%; padding:12px 14px; border-radius:10px; border:1px solid rgba(255,255,255,.12);
+      background:#0b1220; color:var(--text); outline:none; transition:border .15s, box-shadow .15s;
+    }
+    textarea { min-height:90px; resize:vertical; }
+    input::placeholder, textarea::placeholder { color:#64748b; }
+    input:focus, select:focus, textarea:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.25); }
+    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .hint { color:var(--muted); font-size:12px; margin-top:6px; }
+    .error { color:var(--err); font-size:13px; margin-top:6px; display:none; }
+    .chip { display:inline-flex; align-items:center; gap:8px; border:1px dashed rgba(255,255,255,.18); padding:10px 12px; border-radius:10px; background:#0b1220; }
+    .files { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+    .thumb { width:90px; height:90px; border-radius:10px; overflow:hidden; position:relative; border:1px solid rgba(255,255,255,.12); }
+    .thumb img { width:100%; height:100%; object-fit:cover; }
+    .thumb .rm { position:absolute; top:4px; right:4px; background:rgba(0,0,0,.6); border:none; color:#fff; border-radius:8px; padding:2px 6px; cursor:pointer; }
+    .bar { height:8px; width:100%; background:#0b1220; border:1px solid rgba(255,255,255,.12); border-radius:999px; overflow:hidden; }
+    .bar > span { display:block; height:100%; width:0%; background:linear-gradient(90deg,#22c55e,#16a34a); transition:width .2s; }
+    button { appearance:none; border:none; background:var(--acc); color:#062b14; font-weight:700; padding:12px 16px; border-radius:10px; cursor:pointer; }
+    button.secondary { background:#111827; color:#cbd5e1; border:1px solid rgba(255,255,255,.12); }
+    .footer { color:#64748b; font-size:12px; margin-top:16px; }
+    .summary { background:#0b1220; border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:12px; font-size:14px; white-space:pre-wrap; }
+    .success { display:none; background:#052e1a; border:1px solid #14532d; color:#d1fae5; padding:12px; border-radius:10px; margin-top:12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Formularz wyceny telefonu</h1>
+      <p class="lead">Uzupełnij pola poniżej — odezwiemy się z wyceną zwykle w ciągu 1–3 godzin roboczych.</p>
+
+      <form id="quoteForm" novalidate>
+        <div class="grid grid-2">
+          <div>
+            <label for="brand">Marka i model <span class="req">(wymagane)</span></label>
+            <input id="brand" name="brand" type="text" placeholder="np. Apple iPhone 13, Samsung S22" required />
+            <div class="error" data-for="brand">Podaj markę i model.</div>
+          </div>
+
+          <div>
+            <label for="capacity">Pojemność pamięci <span class="req">(wymagane)</span></label>
+            <select id="capacity" name="capacity" required>
+              <option value="">Wybierz…</option>
+              <option>32 GB</option><option>64 GB</option><option>128 GB</option>
+              <option>256 GB</option><option>512 GB</option><option>1 TB</option>
+              <option>Inna</option>
+            </select>
+            <div class="error" data-for="capacity">Wybierz pojemność.</div>
+          </div>
+
+          <div>
+            <label for="battery">Kondycja baterii (jeśli iPhone) / stan baterii</label>
+            <input id="battery" name="battery" type="text" placeholder="np. 87% lub 'trzyma dobrze / do wymiany'" />
+            <div class="hint">W iPhone: Ustawienia → Bateria → Kondycja i ładowanie.</div>
+          </div>
+
+          <div>
+            <label for="condition">Stan urządzenia <span class="req">(wymagane)</span></label>
+            <select id="condition" name="condition" required>
+              <option value="">Wybierz…</option>
+              <option>Jak nowy</option>
+              <option>Bardzo dobry</option>
+              <option>Dobry</option>
+              <option>Ślady używania</option>
+              <option>Uszkodzony</option>
+            </select>
+            <div class="error" data-for="condition">Wybierz stan urządzenia.</div>
+          </div>
+
+          <div>
+            <label for="icloud">Blokada iCloud / FRP <span class="req">(wymagane)</span></label>
+            <select id="icloud" name="icloud" required>
+              <option value="">Wybierz…</option>
+              <option>Odblokowany (brak blokady)</option>
+              <option>Zablokowany iCloud/FRP</option>
+              <option>Nie wiem</option>
+            </select>
+            <div class="error" data-for="icloud">Wybierz status iCloud/FRP.</div>
+          </div>
+
+          <div>
+            <label for="box">Akcesoria i pudełko</label>
+            <input id="box" name="box" type="text" placeholder="np. pudełko, ładowarka, faktura, etui" />
+          </div>
+
+          <div>
+            <label for="issues">Usterki / uwagi</label>
+            <textarea id="issues" name="issues" placeholder="np. pęknięta szybka, rysy, problem z głośnikiem, wymieniany ekran"></textarea>
+          </div>
+
+          <div>
+            <label>Dane kontaktowe <span class="req">(min. jeden kanał)</span></label>
+            <div class="grid grid-2">
+              <div>
+                <input id="phone" name="phone" type="tel" inputmode="tel" placeholder="Numer telefonu" />
+                <div class="hint">Format: 500 600 700 lub +48…</div>
+              </div>
+              <div>
+                <input id="instagram" name="instagram" type="text" placeholder="Instagram @nazwa" />
+              </div>
+            </div>
+            <div class="error" data-for="contact">Podaj numer telefonu lub Instagram.</div>
+          </div>
+
+          <div>
+            <label for="photos">Zdjęcia urządzenia</label>
+            <div class="chip">
+              <input id="photos" name="photos" type="file" accept="image/*" multiple />
+              <span>Dodaj zdjęcia (max 10, do 10 MB każde)</span>
+            </div>
+            <div class="files" id="previews"></div>
+            <div class="error" data-for="photos"></div>
+          </div>
+        </div>
+
+        <div style="margin-top:18px" class="grid">
+          <div class="bar" aria-hidden="true"><span id="progress"></span></div>
+          <div class="row">
+            <button type="button" class="secondary" id="showSummary">Pokaż podsumowanie</button>
+            <button type="submit">Wyślij zapytanie o wycenę</button>
+          </div>
+          <div id="summary" class="summary" style="display:none"></div>
+          <div id="success" class="success">Dziękujemy! Twoje zgłoszenie zostało wysłane.</div>
+        </div>
+      </form>
+
+      <div class="footer">
+        Prywatność: Twoje dane służą wyłącznie do kontaktu w sprawie wyceny.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const f = document.getElementById('quoteForm');
+    const previews = document.getElementById('previews');
+    const progress = document.getElementById('progress');
+    const summaryBox = document.getElementById('summary');
+    const showSummaryBtn = document.getElementById('showSummary');
+    const successBox = document.getElementById('success');
+    const maxFiles = 10, maxSize = 10 * 1024 * 1024;
+
+    // Podgląd miniatur i usuwanie
+    const fileInput = document.getElementById('photos');
+    let files = [];
+    fileInput.addEventListener('change', (e) => {
+      const incoming = Array.from(e.target.files || []);
+      const combined = [...files, ...incoming];
+      const unique = combined.slice(0, maxFiles);
+      const valid = [];
+      previews.innerHTML = '';
+      unique.forEach((file, idx) => {
+        if (!file.type.startsWith('image/')) return;
+        if (file.size > maxSize) return;
+        valid.push(file);
+        const url = URL.createObjectURL(file);
+        const div = document.createElement('div');
+        div.className = 'thumb';
+        div.innerHTML = '<img alt="foto" src="'+url+'"><button type="button" class="rm">×</button>';
+        previews.appendChild(div);
+        div.querySelector('.rm').addEventListener('click', () => {
+          valid.splice(idx, 1);
+          files = valid;
+          renderPreviews();
+        });
+      });
+      files = valid;
+      validatePhotos();
+    });
+
+    function renderPreviews(){
+      previews.innerHTML = '';
+      files.forEach((file, i) => {
+        const url = URL.createObjectURL(file);
+        const div = document.createElement('div');
+        div.className = 'thumb';
+        div.innerHTML = '<img alt="foto" src="'+url+'"><button type="button" class="rm">×</button>';
+        previews.appendChild(div);
+        div.querySelector('.rm').addEventListener('click', () => {
+          files.splice(i,1);
+          renderPreviews();
+        });
+      });
+    }
+
+    // Walidacja
+    function setError(name, msg){
+      const el = document.querySelector('.error[data-for="'+name+'"]');
+      if (!el) return;
+      if (msg){ el.textContent = msg; el.style.display = 'block'; }
+      else { el.style.display = 'none'; }
+    }
+    function validateRequired(id, key){
+      const el = document.getElementById(id);
+      if (!el.value.trim()){ setError(key, el.tagName === 'SELECT' ? 'Wybierz opcję.' : 'To pole jest wymagane.'); return false; }
+      setError(key, null); return true;
+    }
+    function validateContact(){
+      const phone = document.getElementById('phone').value.trim();
+      const insta = document.getElementById('instagram').value.trim();
+      const ok = !!(phone || insta);
+      setError('contact', ok ? null : 'Podaj numer telefonu lub Instagram.');
+      return ok;
+    }
+    function validatePhotos(){
+      const err = [];
+      if (files.length > maxFiles) err.push('Maksymalnie ' + maxFiles + ' zdjęć.');
+      if (files.some(f => f.size > maxSize)) err.push('Każde zdjęcie do 10 MB.');
+      setError('photos', err.length ? err.join(' ') : null);
+      return err.length === 0;
+    }
+    function formProgress(){
+      const required = ['brand','capacity','condition','icloud'];
+      const have = required.filter(id => document.getElementById(id).value.trim()).length + (validateContact()?1:0);
+      const total = required.length + 1;
+      const pct = Math.round(100 * have / total);
+      progress.style.width = pct + '%';
+    }
+    f.addEventListener('input', formProgress);
+    f.addEventListener('change', formProgress);
+    window.addEventListener('load', formProgress);
+
+    // Podsumowanie
+    function buildSummary(){
+      const data = collectData();
+      const lines = [
+        'Model: ' + data.brand,
+        'Pojemność: ' + data.capacity,
+        'Bateria: ' + (data.battery || '-'),
+        'Stan: ' + data.condition,
+        'iCloud/FRP: ' + data.icloud,
+        'Akcesoria: ' + (data.box || '-'),
+        'Usterki: ' + (data.issues || '-'),
+        'Kontakt: ' + (data.phone ? 'tel: ' + data.phone : '') + (data.instagram ? (data.phone ? ', ' : '') + 'IG: ' + data.instagram : ''),
+        'Zdjęcia: ' + files.length + ' szt.'
+      ];
+      return lines.join('\n');
+    }
+    showSummaryBtn.addEventListener('click', () => {
+      summaryBox.textContent = buildSummary();
+      summaryBox.style.display = 'block';
+    });
+
+    function collectData(){
+      const data = Object.fromEntries(new FormData(f).entries());
+      return data;
+    }
+
+    // Wysyłka — przykładowo do webhooka (np. Make/Zapier/wasz backend)
+    async function sendData(){
+      const data = collectData();
+      // Dołączamy pliki jako FormData
+      const fd = new FormData();
+      Object.entries(data).forEach(([k,v]) => fd.append(k, v));
+      files.forEach((file, i) => fd.append('photos', file, file.name || ('photo_'+(i+1)+'.jpg')));
+      // PRZYKŁAD: podmień poniżej URL na swój endpoint (HTTPS)
+      const ENDPOINT = '[example.com](https://example.com/api/wycena)'; // <- podmień
+      const res = await fetch(ENDPOINT, { method:'POST', body: fd });
+      if (!res.ok) throw new Error('Błąd wysyłki (' + res.status + ')');
+      return await res.json().catch(() => ({}));
+    }
+
+    // Obsługa submit
+    f.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const v1 = validateRequired('brand','brand');
+      const v2 = validateRequired('capacity','capacity');
+      const v3 = validateRequired('condition','condition');
+      const v4 = validateRequired('icloud','icloud');
+      const v5 = validateContact();
+      const v6 = validatePhotos();
+      if (!(v1 && v2 && v3 && v4 && v5 && v6)) return;
+
+      // Blokuj przyciski i pokaż progres
+      const btns = f.querySelectorAll('button');
+      btns.forEach(b => b.disabled = true);
+      progress.style.width = '100%';
+
+      try {
+        await sendData();
+        successBox.style.display = 'block';
+        f.reset();
+        files = [];
+        previews.innerHTML = '';
+        summaryBox.style.display = 'none';
+        formProgress();
+      } catch (err) {
+        alert('Nie udało się wysłać formularza. Sprawdź połączenie lub spróbuj ponownie.');
+        console.error(err);
+      } finally {
+        btns.forEach(b => b.disabled = false);
+        setTimeout(() => { progress.style.width = '0%'; }, 600);
+      }
+    });
+  </script>
+</body>
+</html>
